@@ -114,7 +114,7 @@ function renderError(message) {
 
 async function pollJob(jobId) {
   const response = await fetch(apiUrl(`/api/jobs/${jobId}`));
-  const job = await response.json();
+  const job = await readJsonResponse(response);
 
   if (!response.ok) {
     throw new Error(job.error || "查询任务失败");
@@ -154,7 +154,7 @@ async function startTryOnJob() {
     method: "POST",
     body: formData,
   });
-  const payload = await response.json();
+  const payload = await readJsonResponse(response);
 
   if (!response.ok) {
     throw new Error(payload.error || "创建任务失败");
@@ -181,6 +181,15 @@ async function startTryOnJob() {
       renderError(error.message);
     });
   }, 1000);
+}
+
+async function readJsonResponse(response) {
+  const text = await response.text();
+  try {
+    return text ? JSON.parse(text) : {};
+  } catch {
+    throw new Error(text || `HTTP ${response.status}`);
+  }
 }
 
 personInput.addEventListener("change", () => {
