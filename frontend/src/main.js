@@ -65,13 +65,18 @@ function setBusy(isBusy) {
 
 function renderGeneratedResult(result) {
   const mainImageUrl = result.tryOnImageUrl || result.personImageUrl;
-  const providerText = result.provider === "fal" ? "fal.ai 真实试衣图" : "本地预览图";
+  const providerText =
+    result.provider === "fal"
+      ? "fal.ai 真实试衣图"
+      : result.provider === "huggingface"
+        ? "Hugging Face 免费试衣图"
+        : "本地预览图";
   const garmentImage = result.clothingImageUrl
-    ? `<img class="garment-image" src="${escapeHtml(assetUrl(result.clothingImageUrl))}" alt="上传的衣服图片" />`
-    : `<div class="garment-image garment-empty">衣服图</div>`;
+    ? `<img class="garment-image" src="${escapeHtml(assetUrl(result.clothingImageUrl))}" alt="上传的服饰图片" />`
+    : `<div class="garment-image garment-empty">服饰图</div>`;
 
   resultStage.innerHTML = `
-    <div class="result-preview">
+    <div class="result-preview stacked-result">
       <div class="model-card">
         <img src="${escapeHtml(assetUrl(mainImageUrl))}" alt="试穿效果图预览" />
       </div>
@@ -80,15 +85,15 @@ function renderGeneratedResult(result) {
           ${garmentImage}
           <div>
             <strong>${escapeHtml(providerText)}</strong>
-            <span>${escapeHtml(result.clothingNote || "衣服图片已接收")}</span>
+            <span>${escapeHtml(result.clothingNote || "服饰图片已接收")}</span>
           </div>
         </div>
         <div class="turntable" aria-label="站立环绕视频预览">
           <div class="person-silhouette"></div>
         </div>
         <div class="orbit-label">
-          <span>试穿效果图</span>
-          <span>360° 视频预览</span>
+          <span>视频预览</span>
+          <span>下一阶段接入</span>
         </div>
       </div>
     </div>
@@ -122,9 +127,9 @@ async function pollJob(jobId) {
     pollingTimer = null;
     appStatus.textContent = "已生成";
     resultHint.textContent =
-      job.result.provider === "fal"
-        ? "已生成真实试穿效果图"
-        : "未配置 fal.ai，当前显示上传图预览";
+      job.result.provider === "fal" || job.result.provider === "huggingface"
+        ? "已生成试穿效果图"
+        : "当前显示上传图预览";
     progressArea.hidden = true;
     renderGeneratedResult(job.result);
     setBusy(false);
@@ -140,7 +145,7 @@ async function startTryOnJob() {
   const formData = new FormData(form);
 
   appStatus.textContent = "上传中";
-  resultHint.textContent = "正在上传人物照片和衣服图片";
+  resultHint.textContent = "正在上传人物照片和服饰图片";
   progressArea.hidden = false;
   setProgress(0, "创建生成任务");
   setBusy(true);
@@ -157,7 +162,7 @@ async function startTryOnJob() {
 
   if (payload.status === "done" && payload.result) {
     appStatus.textContent = "已生成";
-    resultHint.textContent = "已生成真实试穿效果图";
+    resultHint.textContent = "已生成试穿效果图";
     progressArea.hidden = true;
     renderGeneratedResult(payload.result);
     setBusy(false);
@@ -183,7 +188,7 @@ personInput.addEventListener("change", () => {
 });
 
 clothingInput.addEventListener("change", () => {
-  renderImagePreview(clothingInput, clothingPreview, "上传衣服网图");
+  renderImagePreview(clothingInput, clothingPreview, "上传服饰网图");
 });
 
 form.addEventListener("submit", (event) => {
@@ -210,11 +215,11 @@ form.addEventListener("reset", () => {
   window.setTimeout(() => {
     setBusy(false);
     personPreview.innerHTML = "<span>上传全身照</span>";
-    clothingPreview.innerHTML = "<span>上传衣服网图</span>";
+    clothingPreview.innerHTML = "<span>上传服饰网图</span>";
     resultStage.innerHTML = `
       <div class="empty-state">
         <div class="empty-mark">360</div>
-        <p>生成后会在这里展示试穿效果图和站立环绕视频。</p>
+        <p>生成后上半部分展示试穿效果图，下半部分展示视频预览。</p>
       </div>
     `;
     resultHint.textContent = "填写信息并上传两张图片后开始生成";

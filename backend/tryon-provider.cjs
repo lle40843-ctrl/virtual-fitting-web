@@ -1,5 +1,11 @@
 const FAL_MODEL = process.env.FAL_MODEL || "fal-ai/image-apps-v2/virtual-try-on";
 const HF_SPACE = process.env.HF_SPACE || "yisol/IDM-VTON";
+const CATEGORY_DESCRIPTIONS = {
+  upper: "upper body clothing, top, coat, jacket, shirt",
+  lower: "lower body clothing, pants, trousers, skirt",
+  dress: "full body dress, one-piece dress, gown, full outfit",
+  shoes: "shoes, footwear",
+};
 
 function fileToDataUri(file) {
   const mimeType = file.type || "image/jpeg";
@@ -40,6 +46,10 @@ function shouldFallbackToFreeProvider(error) {
   return /balance|exhausted|locked|payment|quota|FAL_KEY/i.test(error.message || "");
 }
 
+function categoryDescription(garmentCategory) {
+  return CATEGORY_DESCRIPTIONS[garmentCategory] || CATEGORY_DESCRIPTIONS.upper;
+}
+
 async function callFalVirtualTryOn({ personPhoto, clothingPhoto }) {
   if (!process.env.FAL_KEY) {
     throw new Error("FAL_KEY is not configured");
@@ -54,6 +64,8 @@ async function callFalVirtualTryOn({ personPhoto, clothingPhoto }) {
     body: JSON.stringify({
       person_image_url: fileToDataUri(personPhoto),
       clothing_image_url: fileToDataUri(clothingPhoto),
+      preserve_pose: true,
+      aspect_ratio: "3:4",
     }),
   });
 
@@ -83,7 +95,7 @@ async function callFalVirtualTryOn({ personPhoto, clothingPhoto }) {
   };
 }
 
-async function callHuggingFaceTryOn({ personPhoto, clothingPhoto }) {
+async function callHuggingFaceTryOn({ personPhoto, clothingPhoto, garmentCategory }) {
   const { Client, handle_file } = await import("@gradio/client");
   const options = process.env.HUGGINGFACE_TOKEN
     ? { token: process.env.HUGGINGFACE_TOKEN }
@@ -104,7 +116,7 @@ async function callHuggingFaceTryOn({ personPhoto, clothingPhoto }) {
       composite: null,
     },
     garm_img: handle_file(clothingBlob),
-    garment_des: "clothing",
+    garment_des: categoryDescription(garmentCategory),
     is_checked: true,
     is_checked_crop: false,
     denoise_steps: 30,
@@ -124,7 +136,7 @@ async function callHuggingFaceTryOn({ personPhoto, clothingPhoto }) {
   };
 }
 
-async function callVirtualTryOn({ personPhoto, clothingPhoto }) {
+async function callVirtualTryOn({ personPhoto, clothingPhoto, garmentCategory }) {
   try {
     return await callFalVirtualTryOn({ personPhoto, clothingPhoto });
   } catch (error) {
@@ -132,7 +144,7 @@ async function callVirtualTryOn({ personPhoto, clothingPhoto }) {
       throw error;
     }
 
-    return callHuggingFaceTryOn({ personPhoto, clothingPhoto });
+    return callHuggingFaceTryOn({ personPhoto, clothingPhoto, garmentCategory });
   }
 }
 

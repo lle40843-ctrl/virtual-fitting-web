@@ -43,6 +43,16 @@
               <span>体重（kg）</span>
               <input id="weight" name="weight" type="number" min="25" max="220" step="0.1" placeholder="例如 55" required />
             </label>
+
+            <label class="field">
+              <span>试穿类型</span>
+              <select id="garmentCategory" name="garmentCategory" required>
+                <option value="upper">上身（衣服 / 外套）</option>
+                <option value="lower">下身（裤子 / 裙子）</option>
+                <option value="dress">连衣裙 / 全身套装</option>
+                <option value="shoes">鞋子</option>
+              </select>
+            </label>
           </div>
 
           <div class="section-heading media-title">
@@ -63,10 +73,10 @@
             <label class="upload-card" for="clothingPhoto">
               <input id="clothingPhoto" name="clothingPhoto" type="file" accept="image/*" required />
               <div class="preview-frame" id="clothingPreview">
-                <span>上传衣服网图</span>
+                <span>上传服饰网图</span>
               </div>
-              <strong>衣服网图 / 模特试穿图</strong>
-              <small>建议服装轮廓完整、背景简单、图片清晰</small>
+              <strong>衣服 / 裤裙 / 连衣裙 / 鞋子图</strong>
+              <small>建议物品轮廓完整、背景简单、图片清晰</small>
             </label>
           </div>
 
@@ -88,7 +98,7 @@
           <div class="stage" id="resultStage">
             <div class="empty-state">
               <div class="empty-mark">360</div>
-              <p>生成后会在这里展示试穿效果图和站立环绕视频。</p>
+              <p>生成后上半部分展示试穿效果图，下半部分展示视频预览。</p>
             </div>
           </div>
 

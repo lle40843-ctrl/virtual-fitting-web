@@ -298,12 +298,19 @@ h2 {
   grid-template-columns: minmax(210px, 38%) 1fr;
 }
 
+.stacked-result {
+  grid-template-columns: 1fr;
+  grid-template-rows: minmax(320px, 62%) minmax(220px, 38%);
+}
+
 .model-card {
   position: relative;
   display: grid;
   place-items: center;
   padding: 24px;
-  background: #ece7dc;
+  background:
+    linear-gradient(180deg, rgba(255, 253, 249, 0.94), rgba(238, 235, 226, 0.92)),
+    #ece7dc;
 }
 
 .model-card img {
@@ -318,7 +325,7 @@ h2 {
   position: relative;
   display: grid;
   place-items: center;
-  padding: 28px;
+  padding: 82px 28px 36px;
   overflow: hidden;
   background:
     radial-gradient(circle at 50% 48%, rgba(15, 118, 110, 0.16), transparent 30%),
@@ -378,7 +385,7 @@ h2 {
 
 .turntable {
   position: relative;
-  width: min(360px, 80%);
+  width: min(250px, 62%);
   aspect-ratio: 1 / 1.24;
   display: grid;
   place-items: center;
@@ -494,6 +501,10 @@ h2 {
   .result-preview {
     grid-template-columns: 1fr;
     grid-template-rows: 46% 54%;
+  }
+
+  .stacked-result {
+    grid-template-rows: minmax(300px, 58%) minmax(230px, 42%);
   }
 }
 

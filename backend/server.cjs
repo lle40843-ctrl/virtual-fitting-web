@@ -143,12 +143,12 @@ async function saveUploadedImage(jobId, kind, file) {
   return `/uploads/${fileName}`;
 }
 
-async function runTryOnJob(jobId, personPhoto, clothingPhoto) {
+async function runTryOnJob(jobId, personPhoto, clothingPhoto, garmentCategory) {
   const job = jobs.get(jobId);
   if (!job) return;
 
   try {
-    const result = await callVirtualTryOn({ personPhoto, clothingPhoto });
+    const result = await callVirtualTryOn({ personPhoto, clothingPhoto, garmentCategory });
     const current = jobs.get(jobId);
     if (!current) return;
 
@@ -183,6 +183,7 @@ async function createTryOnJob(req, res) {
     const { fields, files } = parseMultipart(body, contentType);
     const personPhoto = files.personPhoto;
     const clothingPhoto = files.clothingPhoto;
+    const garmentCategory = fields.garmentCategory || "upper";
 
     if (!personPhoto) {
       sendJson(res, 400, { error: "请上传自己的全身照" });
@@ -210,6 +211,7 @@ async function createTryOnJob(req, res) {
       gender: fields.gender || "",
       height: fields.height || "",
       weight: fields.weight || "",
+      garmentCategory,
       personImageUrl,
       clothingImageUrl,
       tryOnImageUrl: "",
@@ -218,7 +220,7 @@ async function createTryOnJob(req, res) {
       error: "",
     };
     jobs.set(jobId, job);
-    runTryOnJob(jobId, personPhoto, clothingPhoto);
+    runTryOnJob(jobId, personPhoto, clothingPhoto, garmentCategory);
 
     sendJson(res, 202, { jobId });
   } catch (error) {

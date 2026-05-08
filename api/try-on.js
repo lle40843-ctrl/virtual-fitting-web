@@ -93,9 +93,10 @@ module.exports = async function handler(req, res) {
 
   try {
     const body = await readRequestBody(req);
-    const { files } = parseMultipart(body, contentType);
+    const { fields, files } = parseMultipart(body, contentType);
     const personPhoto = files.personPhoto;
     const clothingPhoto = files.clothingPhoto;
+    const garmentCategory = fields.garmentCategory || "upper";
 
     if (!personPhoto) {
       sendJson(res, 400, { error: "请上传自己的全身照" });
@@ -107,7 +108,7 @@ module.exports = async function handler(req, res) {
       return;
     }
 
-    const result = await callVirtualTryOn({ personPhoto, clothingPhoto });
+    const result = await callVirtualTryOn({ personPhoto, clothingPhoto, garmentCategory });
 
     sendJson(res, 200, {
       status: "done",
