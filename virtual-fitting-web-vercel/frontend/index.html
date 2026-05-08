@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>虚拟试衣生成器</title>
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="workspace" aria-label="虚拟试衣工作台">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">AI Virtual Fitting</p>
+            <h1>虚拟试衣生成器</h1>
+          </div>
+          <div class="status-pill" id="appStatus">待上传</div>
+        </header>
+
+        <form class="panel input-panel" id="tryOnForm">
+          <div class="section-heading">
+            <h2>身体信息</h2>
+            <span>用于匹配比例和成衣尺度</span>
+          </div>
+
+          <div class="field-grid">
+            <label class="field">
+              <span>性别</span>
+              <select id="gender" name="gender" required>
+                <option value="">请选择</option>
+                <option value="female">女</option>
+                <option value="male">男</option>
+                <option value="other">其他 / 不指定</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span>身高（cm）</span>
+              <input id="height" name="height" type="number" min="100" max="230" placeholder="例如 168" required />
+            </label>
+
+            <label class="field">
+              <span>体重（kg）</span>
+              <input id="weight" name="weight" type="number" min="25" max="220" step="0.1" placeholder="例如 55" required />
+            </label>
+          </div>
+
+          <div class="section-heading media-title">
+            <h2>图片素材</h2>
+            <span>上传全身照 + 衣服网图或模特试穿图</span>
+          </div>
+
+          <div class="upload-grid">
+            <label class="upload-card" for="personPhoto">
+              <input id="personPhoto" name="personPhoto" type="file" accept="image/*" required />
+              <div class="preview-frame" id="personPreview">
+                <span>上传全身照</span>
+              </div>
+              <strong>自己的全身照</strong>
+              <small>建议正面站立、光线清晰、无遮挡</small>
+            </label>
+
+            <label class="upload-card" for="clothingPhoto">
+              <input id="clothingPhoto" name="clothingPhoto" type="file" accept="image/*" required />
+              <div class="preview-frame" id="clothingPreview">
+                <span>上传衣服网图</span>
+              </div>
+              <strong>衣服网图 / 模特试穿图</strong>
+              <small>建议服装轮廓完整、背景简单、图片清晰</small>
+            </label>
+          </div>
+
+          <div class="control-row">
+            <button class="secondary-button" type="reset">清空</button>
+            <button class="primary-button" type="submit">
+              <span class="button-icon">▶</span>
+              生成试穿效果
+            </button>
+          </div>
+        </form>
+
+        <section class="panel result-panel" aria-live="polite">
+          <div class="section-heading">
+            <h2>生成结果</h2>
+            <span id="resultHint">填写信息并上传两张图片后开始生成</span>
+          </div>
+
+          <div class="stage" id="resultStage">
+            <div class="empty-state">
+              <div class="empty-mark">360</div>
+              <p>生成后会在这里展示试穿效果图和站立环绕视频。</p>
+            </div>
+          </div>
+
+          <div class="progress-area" id="progressArea" hidden>
+            <div class="progress-meta">
+              <span id="progressLabel">分析人物照片</span>
+              <span id="progressValue">0%</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
