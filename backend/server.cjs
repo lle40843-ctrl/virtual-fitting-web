@@ -149,6 +149,9 @@ async function runTryOnJob(jobId, personPhoto, clothingPhoto, garmentCategory) {
 
   try {
     const result = await callVirtualTryOn({ personPhoto, clothingPhoto, garmentCategory });
+    if (!/^https?:\/\//i.test(result.tryOnImageUrl || "")) {
+      throw new Error("生成服务没有返回可访问的图片链接");
+    }
     const current = jobs.get(jobId);
     if (!current) return;
 

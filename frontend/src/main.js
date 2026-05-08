@@ -78,7 +78,8 @@ function renderGeneratedResult(result) {
   resultStage.innerHTML = `
     <div class="result-preview stacked-result">
       <div class="model-card">
-        <img src="${escapeHtml(assetUrl(mainImageUrl))}" alt="试穿效果图预览" />
+        <img class="tryon-image" src="${escapeHtml(assetUrl(mainImageUrl))}" alt="试穿效果图预览" />
+        <div class="image-fallback" hidden>试穿图加载失败，请重新生成或查看生成服务日志。</div>
       </div>
       <div class="video-card">
         <div class="garment-strip">
@@ -98,6 +99,15 @@ function renderGeneratedResult(result) {
       </div>
     </div>
   `;
+
+  const tryOnImage = resultStage.querySelector(".tryon-image");
+  const fallback = resultStage.querySelector(".image-fallback");
+  if (tryOnImage && fallback) {
+    tryOnImage.addEventListener("error", () => {
+      tryOnImage.hidden = true;
+      fallback.hidden = false;
+    });
+  }
 }
 
 function renderError(message) {

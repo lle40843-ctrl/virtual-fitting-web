@@ -42,6 +42,15 @@ function findImageUrl(value) {
   return "";
 }
 
+function normalizeHuggingFaceUrl(url) {
+  if (!url) return "";
+  if (/^https?:\/\//i.test(url)) return url;
+  if (url.startsWith("/")) {
+    return `https://huggingface.co/spaces/${HF_SPACE}${url}`;
+  }
+  return url;
+}
+
 function shouldFallbackToFreeProvider(error) {
   return /balance|exhausted|locked|payment|quota|FAL_KEY/i.test(error.message || "");
 }
@@ -123,7 +132,7 @@ async function callHuggingFaceTryOn({ personPhoto, clothingPhoto, garmentCategor
     seed: 42,
   });
 
-  const tryOnImageUrl = findImageUrl(result);
+  const tryOnImageUrl = normalizeHuggingFaceUrl(findImageUrl(result));
   if (!tryOnImageUrl) {
     throw new Error("Hugging Face returned no generated image URL");
   }
