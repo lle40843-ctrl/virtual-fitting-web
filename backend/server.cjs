@@ -3,7 +3,7 @@ const fs = require("fs");
 const fsp = require("fs/promises");
 const path = require("path");
 const crypto = require("crypto");
-const { callFalVirtualTryOn } = require("./tryon-provider.cjs");
+const { callVirtualTryOn } = require("./tryon-provider.cjs");
 
 const root = __dirname;
 const port = Number(process.env.BACKEND_PORT || process.env.PORT || 8787);
@@ -148,7 +148,7 @@ async function runTryOnJob(jobId, personPhoto, clothingPhoto) {
   if (!job) return;
 
   try {
-    const result = await callFalVirtualTryOn({ personPhoto, clothingPhoto });
+    const result = await callVirtualTryOn({ personPhoto, clothingPhoto });
     const current = jobs.get(jobId);
     if (!current) return;
 

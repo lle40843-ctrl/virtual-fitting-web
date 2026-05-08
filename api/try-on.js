@@ -1,4 +1,4 @@
-const { callFalVirtualTryOn } = require("../backend/tryon-provider.cjs");
+const { callVirtualTryOn } = require("../backend/tryon-provider.cjs");
 
 const maxUploadBytes = 16 * 1024 * 1024;
 
@@ -85,11 +85,6 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  if (!process.env.FAL_KEY) {
-    sendJson(res, 500, { error: "Vercel 环境变量 FAL_KEY 未配置" });
-    return;
-  }
-
   const contentType = req.headers["content-type"] || "";
   if (!contentType.includes("multipart/form-data")) {
     sendJson(res, 415, { error: "请使用 multipart/form-data 上传" });
@@ -112,7 +107,7 @@ module.exports = async function handler(req, res) {
       return;
     }
 
-    const result = await callFalVirtualTryOn({ personPhoto, clothingPhoto });
+    const result = await callVirtualTryOn({ personPhoto, clothingPhoto });
 
     sendJson(res, 200, {
       status: "done",
