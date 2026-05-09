@@ -28,17 +28,37 @@ const steps = [
   "生成结果预览",
 ];
 
-function corsHeaders() {
+function allowedCorsOrigin(req) {
+  const origin = req.headers.origin || "";
+  const configuredOrigin = process.env.CORS_ORIGIN || "";
+
+  if (!origin) return configuredOrigin || "*";
+  if (!configuredOrigin) return "*";
+  if (origin === configuredOrigin) return origin;
+
+  try {
+    const hostname = new URL(origin).hostname;
+    if (hostname === "vercel.app" || hostname.endsWith(".vercel.app")) {
+      return origin;
+    }
+  } catch {
+    return configuredOrigin;
+  }
+
+  return configuredOrigin;
+}
+
+function corsHeaders(req) {
   return {
-    "Access-Control-Allow-Origin": process.env.CORS_ORIGIN || "*",
+    "Access-Control-Allow-Origin": allowedCorsOrigin(req),
     "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
   };
 }
 
-function sendJson(res, status, payload) {
+function sendJson(req, res, status, payload) {
   res.writeHead(status, {
-    ...corsHeaders(),
+    ...corsHeaders(req),
     "Content-Type": "application/json; charset=utf-8",
   });
   res.end(JSON.stringify(payload));
@@ -177,7 +197,7 @@ async function runTryOnJob(jobId, personPhoto, clothingPhoto, garmentCategory) {
 async function createTryOnJob(req, res) {
   const contentType = req.headers["content-type"] || "";
   if (!contentType.includes("multipart/form-data")) {
-    sendJson(res, 415, { error: "请使用 multipart/form-data 上传" });
+    sendJson(req, res, 415, { error: "请使用 multipart/form-data 上传" });
     return;
   }
 
@@ -189,12 +209,12 @@ async function createTryOnJob(req, res) {
     const garmentCategory = fields.garmentCategory || "upper";
 
     if (!personPhoto) {
-      sendJson(res, 400, { error: "请上传自己的全身照" });
+      sendJson(req, res, 400, { error: "请上传自己的全身照" });
       return;
     }
 
     if (!clothingPhoto) {
-      sendJson(res, 400, { error: "请上传衣服网图或模特试穿图" });
+      sendJson(req, res, 400, { error: "请上传衣服网图或模特试穿图" });
       return;
     }
 
@@ -225,20 +245,20 @@ async function createTryOnJob(req, res) {
     jobs.set(jobId, job);
     runTryOnJob(jobId, personPhoto, clothingPhoto, garmentCategory);
 
-    sendJson(res, 202, { jobId });
+    sendJson(req, res, 202, { jobId });
   } catch (error) {
     if (error.message === "UPLOAD_TOO_LARGE") {
-      sendJson(res, 413, { error: "图片太大，请上传总计 16MB 以内的图片" });
+      sendJson(req, res, 413, { error: "图片太大，请上传总计 16MB 以内的图片" });
       return;
     }
-    sendJson(res, 500, { error: error.message || "创建任务失败" });
+    sendJson(req, res, 500, { error: error.message || "创建任务失败" });
   }
 }
 
-function readJob(res, jobId, includeResult = false) {
+function readJob(req, res, jobId, includeResult = false) {
   const job = jobs.get(jobId);
   if (!job) {
-    sendJson(res, 404, { error: "任务不存在" });
+    sendJson(req, res, 404, { error: "任务不存在" });
     return;
   }
 
@@ -267,7 +287,7 @@ function readJob(res, jobId, includeResult = false) {
     };
   }
 
-  sendJson(res, 200, payload);
+  sendJson(req, res, 200, payload);
 }
 
 function serveUpload(req, res) {
@@ -276,20 +296,20 @@ function serveUpload(req, res) {
   const filePath = path.resolve(uploadDir, relative);
 
   if (!filePath.startsWith(uploadDir)) {
-    res.writeHead(403, corsHeaders());
+    res.writeHead(403, corsHeaders(req));
     res.end("Forbidden");
     return;
   }
 
   fs.readFile(filePath, (err, data) => {
     if (err) {
-      res.writeHead(404, corsHeaders());
+      res.writeHead(404, corsHeaders(req));
       res.end("Not found");
       return;
     }
 
     res.writeHead(200, {
-      ...corsHeaders(),
+      ...corsHeaders(req),
       "Content-Type": types[path.extname(filePath)] || "application/octet-stream",
     });
     res.end(data);
@@ -301,13 +321,13 @@ http
     const pathname = new URL(req.url, `http://${req.headers.host}`).pathname;
 
     if (req.method === "OPTIONS") {
-      res.writeHead(204, corsHeaders());
+      res.writeHead(204, corsHeaders(req));
       res.end();
       return;
     }
 
     if (req.method === "GET" && pathname === "/health") {
-      sendJson(res, 200, {
+      sendJson(req, res, 200, {
         ok: true,
         falConfigured: Boolean(process.env.FAL_KEY),
         freeProvider: process.env.HF_SPACE || "yisol/IDM-VTON",
@@ -322,7 +342,7 @@ http
 
     const jobMatch = pathname.match(/^\/api\/jobs\/([^/]+)(?:\/result)?$/);
     if (req.method === "GET" && jobMatch) {
-      readJob(res, jobMatch[1], pathname.endsWith("/result"));
+      readJob(req, res, jobMatch[1], pathname.endsWith("/result"));
       return;
     }
 
@@ -331,7 +351,7 @@ http
       return;
     }
 
-    sendJson(res, 404, { error: "Not found" });
+    sendJson(req, res, 404, { error: "Not found" });
   })
   .listen(port, host, () => {
     console.log(`Backend API running at http://${host}:${port}`);
