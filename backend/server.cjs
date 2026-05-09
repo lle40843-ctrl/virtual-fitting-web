@@ -310,6 +310,7 @@ http
       sendJson(res, 200, {
         ok: true,
         falConfigured: Boolean(process.env.FAL_KEY),
+        freeProvider: process.env.HF_SPACE || "yisol/IDM-VTON",
       });
       return;
     }
